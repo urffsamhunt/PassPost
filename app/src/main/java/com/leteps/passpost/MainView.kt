@@ -11,49 +11,49 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toFile
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.PermissionState
-import com.google.accompanist.permissions.rememberPermissionState
-import com.google.accompanist.web.WebView
-import com.google.accompanist.web.WebViewState
-import com.google.accompanist.web.rememberWebViewState
 import com.leteps.passpost.ui.theme.PassPostTheme
-import kotlinx.coroutines.MainScope
 import java.io.File
-import java.nio.file.FileSystemLoopException
 
-@Preview(showBackground = true)
+
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun MyApp() {
     PassPostTheme {
-        MainView1("Pass")
+        MainView1()
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-public fun MainView1(title: String) {
-    val cityCount = remember { mutableStateOf(1) }
+public fun MainView1() {
+    val cityCount = rememberSaveable { mutableStateOf(1) }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        title,
+                        "PassPost",
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
@@ -81,7 +81,7 @@ public fun MainView1(title: String) {
                 modifier = Modifier.consumedWindowInsets(innerPadding),
                 contentPadding = innerPadding
             ) {
-                items(cityCount.value) {
+                items(count = cityCount.value) {
                     CardData()
                 }
             }
@@ -92,7 +92,8 @@ public fun MainView1(title: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CardData() {
-    var expandedState by remember { mutableStateOf(false) }
+    val data = DataSet()
+    var expandedState by rememberSaveable { mutableStateOf(false) }
     Card(
         Modifier
             .fillMaxWidth()
@@ -109,10 +110,13 @@ fun CardData() {
                 .height(80.dp)
                 .fillMaxWidth(),
         ) {
-            SelectCity()
+            SelectCity(data)
         }
         if (expandedState) {
-            InfoCard()
+            if (data.gotCookie)
+                InfoCard(data)
+            else
+                TabDetails()
         }
         Divider(thickness = 2.dp, color = MaterialTheme.colorScheme.secondary)
         Card(modifier = Modifier.fillMaxSize()) {
@@ -132,12 +136,14 @@ fun CardData() {
                 )
                 Spacer(modifier = Modifier.size(15.dp, 1.dp))
                 IconButton(
-                    onClick = { expandedState = !expandedState },
+                    onClick = {
+                        expandedState = !expandedState
+                    },
                     modifier = Modifier
                         .padding(5.dp)
                         .fillMaxSize()
                 ) {
-                    Icon(imageVector = Icons.Outlined.Info, contentDescription = "")
+                    Icon(imageVector = Icons.Filled.Lock, contentDescription = "")
                 }
             }
         }
@@ -146,13 +152,14 @@ fun CardData() {
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun SelectCity() {
+fun SelectCity(data: DataSet) {
+
+    val cityName = remember { mutableStateOf(data.cityString) }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
-        val state = rememberWebViewState("https://www.google.com")
-        val webClick = remember { mutableStateOf<Boolean>(false) }
-        val City = rememberSaveable { mutableStateOf<String>("") }
-    val xlFile = remember { mutableStateOf<File?>(null) }
+        val webClick = rememberSaveable { mutableStateOf<Boolean>(false) }
+        //val City = rememberSaveable { mutableStateOf<String>("") }
+        val xlFile = rememberSaveable { mutableStateOf<File?>(null) }
 
 
         val pickLauncher = rememberLauncherForActivityResult(
@@ -160,39 +167,44 @@ fun SelectCity() {
         ) { fileUri ->
             if (fileUri != null) {
                 xlFile.value = File(fileUri.path.toString())
-                City.value = fileUri.path?.substringAfterLast('/')?.substringBeforeLast('.') ?: ""
+                val a = fileUri
+                    .path
+                    ?.substringAfterLast('/')
+                    ?.substringBeforeLast('.')
+                    ?: ""
+                cityName.value = a.lowercase().replaceFirstChar { a[0].uppercase() }
+                data.cityString = cityName.value
+
             }
         }
 
-        if (City.value == "") {
+        if (cityName.value == "") {
             Button(
                 onClick = {
                     pickLauncher.launch(arrayOf("application/vnd.ms-excel"))
                 },
                 modifier = Modifier
                     .weight(1f)
-                    .padding(10.dp),
+                    .padding(10.dp)
+                    .wrapContentWidth(Alignment.Start),
             ) {
                 Text("Select City")
             }
         }
-        if (City.value != "") {
+        if (cityName.value != "") {
             Text(
-                text = City.value,
+                text = cityName.value,
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(15.dp),
-                fontSize = 25.sp,
+                    .padding(15.dp)
+                    .weight(1f),
+                style = TextStyle(fontFamily = FontFamily.Monospace,
+                fontSize = 35.sp)
             )
         }
-
-        if (webClick.value) {
-            OpenWebView(state)
-        }
-
+        var context = LocalContext.current
         Button(
             onClick = {
-                webClick.value = !webClick.value
+                //Do nothing
             }, modifier = Modifier
                 .padding(10.dp)
         ) {
@@ -202,19 +214,7 @@ fun SelectCity() {
 }
 
 @Composable
-fun InfoCard() {
-
+fun InfoCard(data: DataSet) {
+    DetailView(data)
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
-fun getPermissions(filePermissionState: PermissionState) {
-    filePermissionState.launchPermissionRequest()
-}
-
-@Composable
-fun OpenWebView(state: WebViewState) {
-    WebView(
-        state,
-        modifier = Modifier.fillMaxSize()
-    )
-}
