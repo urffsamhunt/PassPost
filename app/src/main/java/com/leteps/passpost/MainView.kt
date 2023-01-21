@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -94,7 +95,7 @@ public fun MainView1() {
 fun CardData() {
     val data = DataSet()
     var expandedState by rememberSaveable { mutableStateOf(false) }
-    Card(
+    OutlinedCard(
         Modifier
             .fillMaxWidth()
             .padding(10.dp)
@@ -108,18 +109,19 @@ fun CardData() {
         Card(
             Modifier
                 .height(80.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                , shape = RectangleShape
         ) {
             SelectCity(data)
         }
         if (expandedState) {
-            if (data.gotCookie)
+            if (!data.gotCookie)
                 InfoCard(data)
             else
-                TabDetails()
+                TabDetails(data)
         }
         Divider(thickness = 2.dp, color = MaterialTheme.colorScheme.secondary)
-        Card(modifier = Modifier.fillMaxSize()) {
+        Card(modifier = Modifier.fillMaxSize(), shape = RectangleShape) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "2%",
@@ -195,7 +197,7 @@ fun SelectCity(data: DataSet) {
             Text(
                 text = cityName.value,
                 modifier = Modifier
-                    .padding(15.dp)
+                    .padding(horizontal = 21.dp)
                     .weight(1f),
                 style = TextStyle(fontFamily = FontFamily.Monospace,
                 fontSize = 35.sp)

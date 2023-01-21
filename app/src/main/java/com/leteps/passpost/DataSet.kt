@@ -12,4 +12,10 @@ open class DataSet() {
     var gotCookie: Boolean = false
     var isStarted: Boolean = false
     var isFinished: Boolean = false
+    var progress: Int = 0
+    var totalProgress: Int = 0
+    var totalApplications: Int = 1
+    var progressPercentage: Int = progress / totalApplications * 100
+    var threadNumber: Int = 3
+    var threadNumLock: Boolean = false
 }
