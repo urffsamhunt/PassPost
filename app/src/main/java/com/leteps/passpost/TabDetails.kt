@@ -2,6 +2,7 @@ package com.leteps.passpost
 
 import android.widget.ToggleButton
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
@@ -110,9 +113,9 @@ fun TabDetails(data: DataSet) {
             color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.fillMaxWidth()
         )
-        LazyColumn(Modifier.height(500.dp)) {
+        LazyRow() {
             items(threadCount.toInt()) {
-                MultiThreader(data)
+                MultiThreader(data, it)
             }
         }
     }

@@ -2,9 +2,11 @@ package com.leteps.passpost
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -99,29 +101,30 @@ fun CardData() {
         Modifier
             .fillMaxWidth()
             .padding(10.dp)
-            .animateContentSize(
-                animationSpec = tween(
-                    durationMillis = 500,
-                    easing = LinearOutSlowInEasing
-                )
-            ),
+            .wrapContentSize()
+            .animateContentSize(),
     ) {
         Card(
             Modifier
                 .height(80.dp)
-                .fillMaxWidth()
-                , shape = RectangleShape
+                .fillMaxWidth(), shape = RectangleShape
         ) {
             SelectCity(data)
         }
-        if (expandedState) {
-            if (!data.gotCookie)
+
+        AnimatedVisibility(visible = expandedState) {
+            if (data.gotCookie)
                 InfoCard(data)
             else
                 TabDetails(data)
         }
+
+
         Divider(thickness = 2.dp, color = MaterialTheme.colorScheme.secondary)
-        Card(modifier = Modifier.fillMaxSize(), shape = RectangleShape) {
+        Card(
+            modifier = Modifier
+                .fillMaxSize(), shape = RectangleShape
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "2%",
@@ -199,8 +202,10 @@ fun SelectCity(data: DataSet) {
                 modifier = Modifier
                     .padding(horizontal = 21.dp)
                     .weight(1f),
-                style = TextStyle(fontFamily = FontFamily.Monospace,
-                fontSize = 35.sp)
+                style = TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontSize = 35.sp
+                )
             )
         }
         var context = LocalContext.current

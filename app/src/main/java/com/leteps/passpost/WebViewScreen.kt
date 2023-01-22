@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.webkit.WebView.*
 import android.webkit.CookieManager
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -48,7 +49,7 @@ fun DetailView(data: DataSet) {
     val openWebViewState = remember { mutableStateOf<Boolean>(true) }
 
     if (openWebViewState.value) {
-        Box() {
+        Box(modifier = Modifier.animateContentSize()) {
             OpenWebView(state = state, navigator = navigator)
             FloatingActionButton(
                 onClick = {
