@@ -4,33 +4,55 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.leteps.passpost.ui.theme.PassPostTheme
 import java.io.File
 
@@ -46,7 +68,7 @@ fun MyApp() {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-public fun MainView1() {
+fun MainView1() {
     val cityCount = rememberSaveable { mutableStateOf(1) }
     Scaffold(
         topBar = {
@@ -81,7 +103,7 @@ public fun MainView1() {
         }, content = { innerPadding ->
             LazyColumn(
                 // consume insets as scaffold doesn't do it by default
-                modifier = Modifier.consumedWindowInsets(innerPadding),
+                modifier = Modifier.consumeWindowInsets(innerPadding),
                 contentPadding = innerPadding
             ) {
                 items(count = cityCount.value) {
@@ -92,11 +114,10 @@ public fun MainView1() {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CardData() {
     val data = DataSet()
-    var expandedState by rememberSaveable { mutableStateOf(false) }
+    val expandedState = rememberSaveable { mutableStateOf(false) }
     OutlinedCard(
         Modifier
             .fillMaxWidth()
@@ -107,14 +128,16 @@ fun CardData() {
         Card(
             Modifier
                 .height(80.dp)
-                .fillMaxWidth(), shape = RectangleShape
+                .fillMaxWidth(), shape = RectangleShape, colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant  ,
+            ),
         ) {
             SelectCity(data)
         }
 
-        AnimatedVisibility(visible = expandedState) {
+        AnimatedVisibility(visible = expandedState.value) {
             if (data.gotCookie)
-                InfoCard(data)
+                InfoCard(data, expandedState)
             else
                 TabDetails(data)
         }
@@ -142,7 +165,7 @@ fun CardData() {
                 Spacer(modifier = Modifier.size(15.dp, 1.dp))
                 IconButton(
                     onClick = {
-                        expandedState = !expandedState
+                        expandedState.value = !expandedState.value
                     },
                     modifier = Modifier
                         .padding(5.dp)
@@ -155,14 +178,12 @@ fun CardData() {
     }
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun SelectCity(data: DataSet) {
 
     val cityName = remember { mutableStateOf(data.cityString) }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
-        val webClick = rememberSaveable { mutableStateOf<Boolean>(false) }
         //val City = rememberSaveable { mutableStateOf<String>("") }
         val xlFile = rememberSaveable { mutableStateOf<File?>(null) }
 
@@ -208,7 +229,6 @@ fun SelectCity(data: DataSet) {
                 )
             )
         }
-        var context = LocalContext.current
         Button(
             onClick = {
                 //Do nothing
@@ -221,7 +241,7 @@ fun SelectCity(data: DataSet) {
 }
 
 @Composable
-fun InfoCard(data: DataSet) {
-    DetailView(data)
+fun InfoCard(data: DataSet, exp: MutableState<Boolean>) {
+    DetailView(data, exp)
 }
 

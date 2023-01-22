@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import android.webkit.WebView.*
 import android.webkit.CookieManager
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,14 +35,17 @@ import com.leteps.passpost.ui.theme.PassPostTheme
 @Composable
 fun WebPreviewer() {
     PassPostTheme {
-        DetailView(DataSet())
+        val a = rememberSaveable {
+            mutableStateOf(false)
+        }
+        DetailView(DataSet(), a)
     }
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailView(data: DataSet) {
+fun DetailView(data: DataSet, exp: MutableState<Boolean>) {
 
     val url by remember { mutableStateOf<String>("https://org2.passportindia.gov.in/PoliceApplication/certLogin/index.action") }
     val state =
@@ -48,7 +53,7 @@ fun DetailView(data: DataSet) {
     val navigator = rememberWebViewNavigator()
     val openWebViewState = remember { mutableStateOf<Boolean>(true) }
 
-    if (openWebViewState.value) {
+    AnimatedVisibility(visible = openWebViewState.value) {
         Box(modifier = Modifier.animateContentSize()) {
             OpenWebView(state = state, navigator = navigator)
             FloatingActionButton(
@@ -59,6 +64,7 @@ fun DetailView(data: DataSet) {
                     if (data.cookieString.count { it == ';' } == 2) {
                         openWebViewState.value = !openWebViewState.value
                         data.gotCookie = true
+                        exp.value = !exp.value
                     }
                     println(data.cookieString)
                     println(data.cityString)
