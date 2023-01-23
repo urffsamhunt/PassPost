@@ -24,8 +24,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,12 +41,13 @@ import androidx.compose.ui.unit.sp
 @Preview
 @Composable
 fun Previewer12() {
-    TabDetails(DataSet())
+    val a = remember { mutableStateOf(false) }
+    TabDetails(DataSet(),a)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TabDetails(data: DataSet) {
+fun TabDetails(data: DataSet, isStarted: MutableState<Boolean>) {
     val showLog = rememberSaveable { mutableStateOf(false) }
     val logger = rememberSaveable { mutableStateOf(false) }
     Column {
@@ -99,6 +102,7 @@ fun TabDetails(data: DataSet) {
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
+                enabled = !isStarted.value,
                 value = threadCount,
                 onValueChange = {
                     threadCount = it
@@ -114,6 +118,7 @@ fun TabDetails(data: DataSet) {
             )
 
             OutlinedTextField(
+                enabled = !isStarted.value,
                 value = row,
                 onValueChange = { row = it },
                 label = { Text("Row") },
@@ -125,6 +130,7 @@ fun TabDetails(data: DataSet) {
             )
 
             OutlinedTextField(
+                enabled = !isStarted.value,
                 value = col,
                 onValueChange = { col = it },
                 label = { Text("Column") },
@@ -142,7 +148,7 @@ fun TabDetails(data: DataSet) {
         )
         LazyRow {
             items(data.threadNumber) {
-                MultiThreader(data, it)
+                MultiThreader(data, it, isStarted)
             }
         }
     }

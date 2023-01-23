@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -119,6 +120,7 @@ fun MainView1() {
 fun CardData() {
     val data = DataSet()
     val expandedState = rememberSaveable { mutableStateOf(false) }
+    val isStarted = rememberSaveable { mutableStateOf(false) }
     OutlinedCard(
         Modifier
             .fillMaxWidth()
@@ -134,14 +136,14 @@ fun CardData() {
                 containerColor = MaterialTheme.colorScheme.surfaceVariant  ,
             ),
         ) {
-            SelectCity(data)
+            SelectCity(data, isStarted)
         }
 
         AnimatedVisibility(visible = expandedState.value) {
             if (data.gotCookie)
                 InfoCard(data, expandedState)
             else
-                TabDetails(data)
+                TabDetails(data, isStarted)
         }
 
 
@@ -181,7 +183,7 @@ fun CardData() {
 }
 
 @Composable
-fun SelectCity(data: DataSet) {
+fun SelectCity(data: DataSet, isStarted: MutableState<Boolean>) {
 
     val cityName = remember { mutableStateOf(data.cityString) }
 
@@ -233,11 +235,11 @@ fun SelectCity(data: DataSet) {
         }
         Button(
             onClick = {
-                //Do nothing
+                isStarted.value = !isStarted.value
             }, modifier = Modifier
                 .padding(10.dp)
         ) {
-            Icon(imageVector = Icons.Filled.ArrowForward, contentDescription = "Login")
+            Icon(imageVector = if (!isStarted.value) Icons.Filled.ArrowForward else Icons.Outlined.ArrowBack, contentDescription = "Login")
         }
     }
 }

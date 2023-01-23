@@ -11,22 +11,30 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.chromium.net.CronetEngine
 
 @Preview
 @Composable
 fun Previewer() {
-    MultiThreader(DataSet(), 1)
+    val a = remember { mutableStateOf(false) }
+    MultiThreader(DataSet(), 1, a)
 }
 
 @Composable
-fun MultiThreader(data: DataSet, i: Int) {
+fun MultiThreader(data: DataSet, i: Int, isStarted: MutableState<Boolean>) {
+    val context = LocalContext.current
+    val myBuilder = CronetEngine.Builder(context)
+    val cronetEngine: CronetEngine = myBuilder.build()
     val per by rememberSaveable { mutableStateOf(data.progressPercentage) }
     Box() {
         Row() {
@@ -35,6 +43,11 @@ fun MultiThreader(data: DataSet, i: Int) {
                 modifier = Modifier.padding(10.dp)
             ) {
                 Text(text = "Thread : " + (i + 1))
+
+                if (isStarted.value) {
+                    Text("lol")
+                    operator(cronetEngine)
+                }
             }
             Divider(
                 modifier = Modifier
