@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
@@ -103,7 +104,7 @@ fun MainView1() {
         }, content = { innerPadding ->
             LazyColumn(
                 // consume insets as scaffold doesn't do it by default
-                modifier = Modifier.consumeWindowInsets(innerPadding),
+                modifier = Modifier.consumeWindowInsets(innerPadding).animateContentSize(),
                 contentPadding = innerPadding
             ) {
                 items(count = cityCount.value) {
@@ -123,7 +124,8 @@ fun CardData() {
             .fillMaxWidth()
             .padding(10.dp)
             .wrapContentSize()
-            .animateContentSize(),
+            .animateContentSize()
+            ,
     ) {
         Card(
             Modifier
@@ -235,7 +237,7 @@ fun SelectCity(data: DataSet) {
             }, modifier = Modifier
                 .padding(10.dp)
         ) {
-            Icon(imageVector = Icons.Filled.AccountBox, contentDescription = "Login")
+            Icon(imageVector = Icons.Filled.ArrowForward, contentDescription = "Login")
         }
     }
 }
