@@ -1,5 +1,7 @@
 package com.leteps.passpost
 
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -41,6 +43,7 @@ import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +51,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -55,7 +59,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toFile
+import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
+import com.anggrayudi.storage.file.baseName
 import com.leteps.passpost.ui.theme.PassPostTheme
+import com.loopj.android.http.AsyncHttpClient
+import com.loopj.android.http.SyncHttpClient
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import java.io.File
 
 
@@ -105,7 +120,9 @@ fun MainView1() {
         }, content = { innerPadding ->
             LazyColumn(
                 // consume insets as scaffold doesn't do it by default
-                modifier = Modifier.consumeWindowInsets(innerPadding).animateContentSize(),
+                modifier = Modifier
+                    .consumeWindowInsets(innerPadding)
+                    .animateContentSize(),
                 contentPadding = innerPadding
             ) {
                 items(count = cityCount.value) {
@@ -140,7 +157,7 @@ fun CardData() {
         }
 
         AnimatedVisibility(visible = expandedState.value) {
-            if (data.gotCookie)
+            if (!data.gotCookie)
                 InfoCard(data, expandedState)
             else
                 TabDetails(data, isStarted)
@@ -182,29 +199,29 @@ fun CardData() {
     }
 }
 
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun SelectCity(data: DataSet, isStarted: MutableState<Boolean>) {
+    val context = LocalContext.current
 
     val cityName = remember { mutableStateOf(data.cityString) }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         //val City = rememberSaveable { mutableStateOf<String>("") }
-        val xlFile = rememberSaveable { mutableStateOf<File?>(null) }
+        val xlFile = rememberSaveable { mutableStateOf<Uri?>(null) }
 
 
         val pickLauncher = rememberLauncherForActivityResult(
             ActivityResultContracts.OpenDocument()
         ) { fileUri ->
             if (fileUri != null) {
-                xlFile.value = File(fileUri.path.toString())
-                val a = fileUri
-                    .path
-                    ?.substringAfterLast('/')
-                    ?.substringBeforeLast('.')
-                    ?: ""
-                cityName.value = a.lowercase().replaceFirstChar { a[0].uppercase() }
+                xlFile.value = fileUri
+                val a = DocumentFile.fromSingleUri(context, fileUri)?.baseName
+                println(a)
+                cityName.value = a?.uppercase().toString()
                 data.cityString = cityName.value
-
+                val file = context.contentResolver.openInputStream(xlFile.value.toString().toUri())
+                data.excelFile = file
             }
         }
 
@@ -233,9 +250,19 @@ fun SelectCity(data: DataSet, isStarted: MutableState<Boolean>) {
                 )
             )
         }
+        if (isStarted.value && cityName.value!="") {
+            val client = SyncHttpClient()
+            LaunchedEffect(Unit) {
+                GlobalScope.launch {
+                        println(Thread.currentThread())
+                        operator(client, data)
+                }
+            }
+        }
+
         Button(
             onClick = {
-                isStarted.value = !isStarted.value
+                    isStarted.value = !isStarted.value
             }, modifier = Modifier
                 .padding(10.dp)
         ) {

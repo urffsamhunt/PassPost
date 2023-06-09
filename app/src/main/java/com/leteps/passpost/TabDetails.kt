@@ -113,26 +113,31 @@ fun TabDetails(data: DataSet, isStarted: MutableState<Boolean>) {
                 modifier = Modifier
                     .padding(10.dp)
                     .width(120.dp),
-                supportingText = { Text("Default: 3") },
+                supportingText = { Text("Default: 1") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
             OutlinedTextField(
                 enabled = !isStarted.value,
                 value = row,
-                onValueChange = { row = it },
+                onValueChange = { row = it
+                                data.rownum = row.trim()
+                                    .toIntOrNull()
+                                    ?: 0 },
                 label = { Text("Row") },
                 readOnly = false,
                 modifier = Modifier
                     .padding(10.dp)
                     .width(70.dp),
-                supportingText = { Text("3") }
+                supportingText = { Text("4")},
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
             OutlinedTextField(
                 enabled = !isStarted.value,
                 value = col,
-                onValueChange = { col = it },
+                onValueChange = { col = it
+                                data.colnum = col.trim().toIntOrNull()?: 0},
                 label = { Text("Column") },
                 readOnly = false,
                 modifier = Modifier

@@ -1,9 +1,7 @@
 package com.leteps.passpost
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -21,7 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.chromium.net.CronetEngine
+import com.loopj.android.http.AsyncHttpClient
+
 
 @Preview
 @Composable
@@ -33,8 +32,6 @@ fun Previewer() {
 @Composable
 fun MultiThreader(data: DataSet, i: Int, isStarted: MutableState<Boolean>) {
     val context = LocalContext.current
-    val myBuilder = CronetEngine.Builder(context)
-    val cronetEngine: CronetEngine = myBuilder.build()
     val per by rememberSaveable { mutableStateOf(data.progressPercentage) }
     Box() {
         Row() {
@@ -46,7 +43,6 @@ fun MultiThreader(data: DataSet, i: Int, isStarted: MutableState<Boolean>) {
 
                 if (isStarted.value) {
                     Text("lol")
-                    operator(cronetEngine)
                 }
             }
             Divider(
